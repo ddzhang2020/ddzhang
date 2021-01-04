@@ -1,72 +1,474 @@
-import java.awt.BorderLayout;
-import java.awt.GridLayout;
+package Calculator;
+
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Stack;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
-import javax.swing.border.EmptyBorder;
-public class CalculatorDemo extends JFrame
-{
-    private JPanel contentPane;    //内容面板
-    private JTextField textField;    //文本框
-    public CalculatorDemo(){};    //构造方法
-    public static void main(String[] args)
-    {
-        CalculatorDemo frame=new CalculatorDemo();
-        frame.setVisible(true);
+
+public class SimpleCalculator implements ActionListener {
+    private JFrame f;
+    private JPanel mp;
+    //Define two text boxes to display calculations and results
+    private JTextField show, showexp;
+    //Define number buttons
+    private JButton zero, one, two, three, four, five, six, seven, eight, nine;
+    //Define control buttons
+    private JButton CE, C, del, point, neg;
+    //Define operation symbol button
+    private JButton div, mul, plus, minus, eql;
+    //Define the string representation of the expression
+    private String exp, outcome;
+
+    public static void main(String[] args) {
+        SimpleCalculator c = new SimpleCalculator();
+        c.display();
     }
-}
 
-public CalculatorDemo()
-{
-    setTitle("计算器");    //设置窗体的标题
-    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);    //设置窗体退出时操作
-    setBounds(100, 100, 250, 200);    //设置窗体位置和大小
-    contentPane=new JPanel();    //创建内容面板
-    contentPane.setBorder(new EmptyBorder(5,5,5,5));    //设置面板的边框
-    contentPane.setLayout(new BorderLayout(0,0));    //设置内容面板为边界布局
-    setContentPane(contentPane);    //应用内容面板
-    JPanel panel1=new JPanel();    //新建面板用于保存文本框
-    contentPane.add(panel1,BorderLayout.NORTH);    //将面板放置在边界布局的北部
-    textField=new JTextField();    //新建文本框
-    textField.setHorizontalAlignment(SwingConstants.RIGHT);    //文本框中的文本使用右对齐
-    panel1.add(textField);    //将文本框增加到面板中
-    textField.setColumns(18);    //设置文本框的列数是18
-}
+    //Initialize controls and variables in the constructor
+    SimpleCalculator() {
+        f = new JFrame("Calculator");
+        mp = new JPanel();
 
-JPanel panel2=new JPanel();    //新建面板用于保存按钮
-contentPane.add(panel2, BorderLayout.CENTER);    //将面板放置在边界布局的中央
-panel2.setLayout(new GridLayout(4,4,5,5));    //面板使用网格4X4布局
-JButton button01=new JButton("7");    //新建按钮
-panel2.add(button01);    //应用按钮
-JButton button02=new JButton("8");    //新建按钮
-panel2.add(button02);    //应用按钮
-JButton button03=new JButton("9");    //新建按钮
-panel2.add(button03);    //应用按钮
-JButton button04=new JButton("+");    //新建按钮
-panel2.add(button04);    //应用按钮
-JButton button05=new JButton("4");    //新建按钮
-panel2.add(button05);    //应用按钮
-JButton button06=new JButton("5");    //新建按钮
-panel2.add(button06);    //应用按钮
-JButton button07=new JButton("6");    //新建按钮
-panel2.add(button07);    //应用按钮
-JButton button08=new JButton("-");    //新建按钮
-panel2.add(button08);    //应用按钮
-JButton button09=new JButton("3");    //新建按钮
-panel2.add(button09);    //应用按钮
-JButton button10=new JButton("2");    //新建按钮
-panel2.add(button10);    //应用按钮
-JButton button11=new JButton("1");    //新建按钮
-panel2.add(button11);    //应用按钮
-JButton button12=new JButton("*");    //新建按钮
-panel2.add(button12);    //应用按钮
-JButton button13=new JButton("0");    //新建按钮
-panel2.add(button13);    //应用按钮
-JButton button14=new JButton(".");    //新建按钮
-panel2.add(button14);    //应用按钮
-JButton button15=new JButton("=");    //新建按钮
-panel2.add(button15);    //应用按钮
-JButton button16=new JButton("/");    //新建按钮
-panel2.add(button16);    //应用按钮
+        //Create a single-line text control
+        show = new JTextField("0");
+        showexp = new JTextField();
+
+        //Create buttons
+        zero = new JButton("0");
+        one = new JButton("1");
+        two = new JButton("2");
+        three = new JButton("3");
+        four = new JButton("4");
+        five = new JButton("5");
+        six = new JButton("6");
+        seven = new JButton("7");
+        eight = new JButton("8");
+        nine = new JButton("9");
+        CE = new JButton("CE");
+        C = new JButton("C");
+        del = new JButton("DEL");
+        plus = new JButton("+");
+        minus = new JButton("-");
+        mul = new JButton("*");
+        div = new JButton("/");
+        neg = new JButton("+/-");
+        point = new JButton(".");
+        eql = new JButton("=");
+
+        //Initially set the string to store the expression and result as an empty string
+        exp = outcome = "";
+    }
+
+    public void display() {
+        //Exit the program when the is closed
+        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        //Set the properties of the single-line text box that displays the results
+        show.setFont(new Font(Font.SERIF, Font.BOLD, 40));
+        show.setBorder(BorderFactory.createEmptyBorder());
+        show.setHorizontalAlignment(SwingConstants.RIGHT);
+        show.setEnabled(false);
+
+        //Set the related properties of the single-line text box that displays the expression
+        showexp.setFont(new Font(Font.SERIF, Font.BOLD, 16));
+        showexp.setBorder(BorderFactory.createEmptyBorder());
+        showexp.setHorizontalAlignment(SwingConstants.RIGHT);
+        showexp.setEnabled(false);
+
+        //Set the related properties of the button
+        CE.setForeground(Color.BLUE);
+        CE.setFont(new Font(Font.SERIF, Font.BOLD, 16));
+        CE.setContentAreaFilled(false);
+        C.setForeground(Color.BLUE);
+        C.setFont(new Font(Font.SERIF, Font.BOLD, 16));
+        C.setContentAreaFilled(false);
+        div.setForeground(Color.BLUE);
+        div.setFont(new Font(Font.SERIF, Font.BOLD, 16));
+        div.setContentAreaFilled(false);
+        mul.setFont(new Font(Font.SERIF, Font.BOLD, 16));
+        mul.setForeground(Color.BLUE);
+        mul.setContentAreaFilled(false);
+        plus.setForeground(Color.BLUE);
+        plus.setFont(new Font(Font.SERIF, Font.BOLD, 16));
+        plus.setContentAreaFilled(false);
+        minus.setForeground(Color.BLUE);
+        minus.setFont(new Font(Font.SERIF, Font.BOLD, 16));
+        minus.setContentAreaFilled(false);
+        point.setForeground(Color.BLUE);
+        point.setFont(new Font(Font.SERIF, Font.BOLD, 16));
+        point.setContentAreaFilled(false);
+        del.setForeground(Color.BLUE);
+        del.setFont(new Font(Font.SERIF, Font.BOLD, 16));
+        del.setContentAreaFilled(false);
+        eql.setForeground(Color.BLUE);
+        eql.setFont(new Font(Font.SERIF, Font.BOLD, 16));
+        eql.setContentAreaFilled(false);
+        zero.setForeground(Color.BLUE);
+        zero.setFont(new Font(Font.SERIF, Font.BOLD, 16));
+        zero.setContentAreaFilled(false);
+        one.setForeground(Color.BLUE);
+        one.setFont(new Font(Font.SERIF, Font.BOLD, 16));
+        one.setContentAreaFilled(false);
+        two.setForeground(Color.BLUE);
+        two.setFont(new Font(Font.SERIF, Font.BOLD, 16));
+        two.setContentAreaFilled(false);
+        three.setForeground(Color.BLUE);
+        three.setFont(new Font(Font.SERIF, Font.BOLD, 16));
+        three.setContentAreaFilled(false);
+        four.setForeground(Color.BLUE);
+        four.setFont(new Font(Font.SERIF, Font.BOLD, 16));
+        four.setContentAreaFilled(false);
+        five.setForeground(Color.BLUE);
+        five.setFont(new Font(Font.SERIF, Font.BOLD, 16));
+        five.setContentAreaFilled(false);
+        six.setForeground(Color.BLUE);
+        six.setFont(new Font(Font.SERIF, Font.BOLD, 16));
+        six.setContentAreaFilled(false);
+        seven.setForeground(Color.BLUE);
+        seven.setFont(new Font(Font.SERIF, Font.BOLD, 16));
+        seven.setContentAreaFilled(false);
+        eight.setForeground(Color.BLUE);
+        eight.setFont(new Font(Font.SERIF, Font.BOLD, 16));
+        eight.setContentAreaFilled(false);
+        nine.setForeground(Color.BLUE);
+        nine.setFont(new Font(Font.SERIF, Font.BOLD, 16));
+        nine.setContentAreaFilled(false);
+        neg.setForeground(Color.BLUE);
+        neg.setFont(new Font(Font.SERIF, Font.BOLD, 16));
+        neg.setContentAreaFilled(false);
+
+        //Set GridBagLayout
+        GridBagLayout gblayout = new GridBagLayout();
+        mp.setLayout(gblayout);
+        GridBagConstraints g = new GridBagConstraints();
+        g.fill = GridBagConstraints.BOTH;  //Set to fill the entire space when a cell is not filled
+        g.weightx = 1.0;  //Set the zoom ratio when the window becomes larger
+        g.weighty = 1.0;
+
+        g.gridx = 0;  //Position in the first row and first column
+        g.gridy = 0;
+        g.gridwidth = GridBagConstraints.REMAINDER;  //Fill the entire row
+        g.gridheight = 1;  //Occupy a row of grid
+        g.insets = new Insets(5, 5, 0, 5);  //Set the distance between this component and other components
+        gblayout.setConstraints(showexp, g);  //Apply the above settings to the showexp text box
+
+        g.gridx = 0;
+        g.gridy = 1;
+        g.gridheight = 2;
+        g.insets = new Insets(0, 5, 5, 5);
+        gblayout.setConstraints(show, g);
+
+        g.insets = new Insets(5, 5, 5, 5);
+        g.gridwidth = 1;
+        g.gridheight = 1;
+
+        g.gridy = 3;
+        g.gridx = 0;
+        gblayout.setConstraints(CE, g);
+        g.gridx = 1;
+        gblayout.setConstraints(C, g);
+        g.gridx = 2;
+        gblayout.setConstraints(del, g);
+        g.gridx = 3;
+        gblayout.setConstraints(div, g);
+
+        g.gridy = 4;
+        g.gridx = 0;
+        gblayout.setConstraints(seven, g);
+        g.gridx = 1;
+        gblayout.setConstraints(eight, g);
+        g.gridx = 2;
+        gblayout.setConstraints(nine, g);
+        g.gridx = 3;
+        gblayout.setConstraints(mul, g);
+
+        g.gridy = 5;
+        g.gridx = 0;
+        gblayout.setConstraints(four, g);
+        g.gridx = 1;
+        gblayout.setConstraints(five, g);
+        g.gridx = 2;
+        gblayout.setConstraints(six, g);
+        g.gridx = 3;
+        gblayout.setConstraints(minus, g);
+
+        g.gridy = 6;
+        g.gridx = 0;
+        gblayout.setConstraints(one, g);
+        g.gridx = 1;
+        gblayout.setConstraints(two, g);
+        g.gridx = 2;
+        gblayout.setConstraints(three, g);
+        g.gridx = 3;
+        gblayout.setConstraints(plus, g);
+
+        g.gridy = 7;
+        g.gridx = 0;
+        gblayout.setConstraints(neg, g);
+        g.gridx = 1;
+        gblayout.setConstraints(zero, g);
+        g.gridx = 2;
+        gblayout.setConstraints(point, g);
+        g.gridx = 3;
+        gblayout.setConstraints(eql, g);
+
+        mp.add(showexp);
+        mp.add(show);
+        mp.add(CE);
+        mp.add(C);
+        mp.add(del);
+        mp.add(div);
+        mp.add(seven);
+        mp.add(eight);
+        mp.add(nine);
+        mp.add(mul);
+        mp.add(four);
+        mp.add(five);
+        mp.add(six);
+        mp.add(minus);
+        mp.add(one);
+        mp.add(two);
+        mp.add(three);
+        mp.add(plus);
+        mp.add(neg);
+        mp.add(zero);
+        mp.add(point);
+        mp.add(eql);
+
+        f.setContentPane(mp);
+        f.setSize(440, 500);
+        f.setLocationRelativeTo(null);
+        f.setVisible(true);
+
+        //Add a listener event for the button
+        CE.addActionListener(this);
+        C.addActionListener(this);
+        del.addActionListener(this);
+        plus.addActionListener(this);
+        minus.addActionListener(this);
+        mul.addActionListener(this);
+        div.addActionListener(this);
+        point.addActionListener(this);
+        neg.addActionListener(this);
+        eql.addActionListener(this);
+        zero.addActionListener(this);
+        one.addActionListener(this);
+        two.addActionListener(this);
+        three.addActionListener(this);
+        four.addActionListener(this);
+        five.addActionListener(this);
+        six.addActionListener(this);
+        seven.addActionListener(this);
+        eight.addActionListener(this);
+        nine.addActionListener(this);
+
+    }
+
+    //Responding to listener events
+    public void actionPerformed(ActionEvent e) {
+
+        outcome = "";
+
+        //Clear the last input operand
+        if ((e.getSource()) == CE) {
+            int pos = posOfLastOperator(exp);
+            if (pos >= 0)
+                exp = exp.substring(0, pos + 1);
+            else  //Only one operand is directly cleared
+                exp = "0";
+            show.setText(exp);
+        }
+        //Empty expression
+        else if ((e.getSource()) == C) {
+            exp = "0";
+            show.setText(exp);
+        }
+        //Clear the last character
+        else if ((e.getSource()) == del) {
+            exp = exp.substring(0, exp.length() - 1);
+            if (exp.length() == 0)  //After deleting all the input, set to display 0
+                exp = "0";
+            show.setText(exp);
+        }
+        //Receive operator
+        else if ((e.getSource()) == plus || (e.getSource()) == minus || (e.getSource()) == mul || (e.getSource()) == div) {
+            if (exp.length() != 0 && (!isOperator(exp.charAt(exp.length() - 1)))) //You must have a number to enter an operator
+                exp += e.getActionCommand();
+            show.setText(exp);
+        }
+        //Infix expression is evaluated and output
+        else if ((e.getSource()) == eql) {
+            exp+='#';
+            //Split the numbers from the expression
+            String[] nums = exp.split("[^.0-9]");
+            System.out.println(nums);
+            List<Double> numList = new ArrayList<>();
+            for (int i = 0; i < nums.length; i++) {   //Convert each string of numbers to DOUBLE type
+                if (!"".equals(nums[i]))
+                    numList.add(Double.parseDouble(nums[i]));
+            }
+            double out = getValueOfMid(exp, numList);  //Evaluation using infix
+            outcome = "" + out;  //Convert the obtained result into a string
+            exp = exp.substring(0,exp.length()-1);
+            showexp.setText(exp);
+            show.setText(outcome);
+            exp = "";
+        }
+        //Get the label value corresponding to the button
+        else {
+            if (exp == "0")
+                exp = "";
+            exp += e.getActionCommand();
+            show.setText(exp);
+        }
+    }
+
+    //Determine whether a character is a number
+    public static boolean isDigit(char ch) {
+        return (ch >= '0' && ch <= '9');
+    }
+
+    //Determine whether a string is all numbers
+    public boolean isDigitString(String s) {
+        for (int i = 0; i < s.length(); i++) {
+            if (!isDigit(s.charAt(i)))
+                return false;
+        }
+        return true;
+    }
+
+    //Determine whether a character is an operator
+    public boolean isOperator(char c) {
+        return (c == '+') || (c == '-') || (c == '*') || (c == '/');
+    }
+
+    //Find the position of the last operator in the string
+    public int posOfLastOperator(String s) {
+        for (int i = s.length() - 1; i >= 0; i--) {
+            if (isOperator(s.charAt(i))) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    //Define the priority of operators in the stack and return the priority of the corresponding operator
+    public static int isp(char ch) {
+        switch (ch) {
+
+            case '*':
+                return 2;
+            case '/':
+                return 2;
+            case '+':
+                return 1;
+            case '-':
+                return 1;
+            case '#':
+                return 0;
+        }
+        return -1;
+    }
+
+    //Define the priority of operators outside the stack and return the priority of the corresponding operator
+    public static int osp(char ch) {
+        switch (ch) {
+            case '*':
+                return 2;
+            case '/':
+                return 2;
+            case '+':
+                return 1;
+            case '-':
+                return 1;
+            case '#':
+                return 0;
+        }
+        return 0;
+    }
+
+    //Calculate the two operands taken out and the corresponding operator and return the calculation result
+    public static double compute(double a, char ch, double b) {
+        switch (ch) {
+            case '+':
+                return a + b;
+            case '-':
+                return a - b;
+            case '*':
+                return a * b;
+            case '/':
+                return a / b;
+            default:
+                break;
+        }
+        return 0;
+    }
+
+    ////Evaluate the input formula (infix formula)
+    public static double getValueOfMid(String exp,List<Double> numList){
+
+        //Define the operator stack
+        Stack<Character> optr = new Stack<>();
+        //Define the operand stack
+        Stack<Double> opnd = new Stack<>();
+        double outcome = 0;
+        double a,b;
+        char sym;
+        optr.push('#');
+        int i = 0,j = 0;
+        while(exp.charAt(i)!='#' || optr.peek()!='#'){
+            //When traversing to the number, skip the number string, and replace the previously divided double type data on the stack
+            if(isDigit(exp.charAt(i))){
+                while(isDigit(exp.charAt(i))) {
+                    i++;
+                    if(i==exp.length())
+                        break;
+                }
+                i--;
+                opnd.push(numList.get(j));
+                j++;
+            }
+
+            else {
+                sym = optr.peek();
+                int m = isp(sym);
+                int n = osp(exp.charAt(i));
+                if(m<n)
+                    optr.push(exp.charAt(i));   //The precedence of operators inside the stack is less than the operators outside the stack
+                else{     //The precedence of operators outside the stack is less than the operators inside the stack
+                    //sym = optr.peek();
+                    optr.pop();   //Remove top operator
+                    if(m == n || m >n){
+                        b = opnd.peek();
+                        opnd.pop();      //Remove top operand
+                        if(!opnd.empty()){  //When the operand stack is not empty, continue to take out the number in the stack for operation
+                            a = opnd.peek();
+                            opnd.pop();
+                            opnd.push(compute(a,sym,b));
+                            continue;
+                        }
+
+                    }
+                }
+
+            }
+            i++;
+        }
+        outcome = opnd.peek();
+        return outcome;
+    }
+
+
+}
